@@ -1,5 +1,5 @@
 """
-PREDICATE
+Extract Data
 Copyright 2025-present NAVER Corp.
 The 3-Clause BSD License
 

@@ -105,7 +105,7 @@ If p_cut() is yielded by any clause, the system will stop trying any subsequent 
 Example:
 
 ```python
-from predicate import p_prolog, p_check, p_cut
+from predicate import p_prolog, p_check, p_cut, p_fail
 
 @p_prolog(guard=lambda data, item: item in data)
 def find_path(data, item):
@@ -170,6 +170,9 @@ print(find_path([10], 1))
 # Item 1 not found in specific ways, checking general.
 # []
 
+#-------------------------------------------------------
+#-------------------------------------------------------
+#-------------------------------------------------------
 
 # Example with p_cut
 @p_prolog()
@@ -202,7 +205,7 @@ print("\n--- Testing p_cut ---")
 #   - The outer loop for clauses will now *stop* looking for more clauses after this one.
 #   - Even if the first clause generator had more yields, they would be collected.
 # - Clause 2 will *not* be tried because of the cut from Clause 1.
-print(find_first_positive_even([1, 2, 3, 4]))
+print(find_first_positive_even([2, 3, 4]))
 # Expected output:
 # Yielding first positive even: 2
 # After cut in first clause.
