@@ -173,9 +173,9 @@ print(find_path([10], 1))
 
 Here are other examples with the use of `p_cut`. These are a little bit more diffcult to assess. Basically, what we do here is that when a solution has been found, _we do not engage with the next clause._
 
-`yield` is used with `p_cut()` and any value with want to return.
+`yield` is used with `p_cut()` or any value with want to return.
 
-```Python
+```python
 # Example with p_cut
 @p_prolog()
 def find_first_positive_even(numbers):
@@ -226,7 +226,11 @@ print(find_first_positive_even([1, 3, 5, 2]))
 # Yielding first positive even: 2
 # After cut in first clause.
 # [2]
+```
 
+We can contrast the above example with this one, where we test both functions. We can see on this example, that both functions are used to provide the final answer. The values in the second function are multiplied by 10 to distinguish, which function provided a value.
+
+```python
 print("\n--- Testing p_cut when first clause never yields p_cut ---")
 @p_prolog()
 def find_all_odd_numbers(numbers):
@@ -247,8 +251,8 @@ print(find_all_odd_numbers([1, 2, 3, 4]))
 # Trying second clause for odd numbers.
 # [1, 3, 10, 30]
 
-Return Value: Returns a list containing all solutions yielded by successful clauses. 
-An empty list is returned if no solutions are found.
+# Return Value: Returns a list containing all solutions yielded by successful clauses. 
+# An empty list is returned if no solutions are found.
 ```
 
 
