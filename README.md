@@ -169,11 +169,13 @@ print(find_path([10], 1))
 # Expected output:
 # Item 1 not found in specific ways, checking general.
 # []
+```
 
-#-------------------------------------------------------
-#-------------------------------------------------------
-#-------------------------------------------------------
+Here are other examples with the use of `p_cut`. These are a little bit more diffcult to assess. Basically, what we do here is that when a solution has been found, _we do not engage with the next clause._
 
+`yield` is used with `p_cut()` and any value with want to return.
+
+```Python
 # Example with p_cut
 @p_prolog()
 def find_first_positive_even(numbers):
