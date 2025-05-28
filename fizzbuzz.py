@@ -3,7 +3,7 @@ PREDICATE Example
 Copyright 2025-present NAVER Corp.
 The 3-Clause BSD License
 
-fizzbuzz
+fizzbuzz: A simple demonstration of how to use predicates for an intemporal example.
 """
 
 from predicate import p_check, predicate
