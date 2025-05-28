@@ -139,6 +139,7 @@ def find_path(data, item):
 print("--- Searching for 5 ---")
 # Only Clause 1's guard will pass, it yields 5, and the predicate succeeds.
 # No cut, so all clauses could theoretically run if 5 wasn't found directly.
+
 print(find_path([1, 2, 5, 8], 5))
 # Expected output:
 # Found 5 directly via Clause 1.
@@ -206,7 +207,9 @@ print("\n--- Testing p_cut ---")
 #   - The outer loop for clauses will now *stop* looking for more clauses after this one.
 #   - Even if the first clause generator had more yields, they would be collected.
 # - Clause 2 will *not* be tried because of the cut from Clause 1.
+
 print(find_first_positive_even([2, 3, 4]))
+
 # Expected output:
 # Yielding first positive even: 2
 # After cut in first clause.
@@ -217,7 +220,9 @@ print("\n--- Testing p_cut with no initial match in first clause ---")
 # - Clause 1:
 #   - n=1: p_fail()
 # - Clause 2 is then tried
+
 print(find_first_positive_even([1, 3, 2, 7, 9, 5, 4, 11]))
+
 # Expected output:
 # Yielding first positive even: 2 and 4
 # [2,4]
@@ -240,7 +245,9 @@ def find_all_odd_numbers(numbers):
         if n % 2 != 0:
             yield n * 10 # Yield a different value to distinguish
 
+
 print(find_all_odd_numbers([1, 2, 3, 4]))
+
 # Expected output:
 # [1, 3, 10, 30] (Order might vary depending on how generator is consumed, but both clauses contribute)
 # Trying second clause for odd numbers.
