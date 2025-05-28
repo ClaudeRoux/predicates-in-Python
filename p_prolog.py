@@ -43,7 +43,8 @@ print("--- Searching for 5 ---")
 print(find_path([1, 2, 5, 8], 5))
 # Expected output:
 # Found 5 directly via Clause 1.
-# [5]
+# Then moving to next function
+# [5, (5,2)]
 
 print("\n--- Searching for 8 (no direct hit, found in list) ---")
 print(find_path([1, 2, 5, 8], 8))
