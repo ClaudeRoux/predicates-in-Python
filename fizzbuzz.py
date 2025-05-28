@@ -1,3 +1,11 @@
+"""
+PREDICATE Example
+Copyright 2025-present NAVER Corp.
+The 3-Clause BSD License
+
+fizzbuzz
+"""
+
 from predicate import p_check, predicate
 
 @predicate()
