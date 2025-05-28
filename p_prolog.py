@@ -101,7 +101,6 @@ def find_first_positive_even(numbers):
 print("\n--- Testing p_cut ---")
 # Example: [1, 2, 3, 4]
 # - Clause 1:
-#   - n=1: p_fail()
 #   - n=2: yields 2, yields p_cut(). "After cut in first clause." is printed.
 #   - The outer loop for clauses will now *stop* looking for more clauses after this one.
 #   - Even if the first clause generator had more yields, they would be collected.
@@ -113,18 +112,14 @@ print(find_first_positive_even([2, 3, 4]))
 # [2]
 
 print("\n--- Testing p_cut with no initial match in first clause ---")
-# Example: [1, 3, 5, 2]
+# Example: [1, 3, 2, 7, 9, 5, 4, 11]
 # - Clause 1:
 #   - n=1: p_fail()
-#   - n=3: p_fail()
-#   - n=5: p_fail()
-#   - n=2: yields 2, yields p_cut(). "After cut in first clause."
-# - Clause 2 will *not* be tried because of the cut from Clause 1.
-print(find_first_positive_even([1, 3, 5, 2]))
+# - Clause 2:
+print(find_first_positive_even([1, 3, 2, 7, 9, 5, 4, 11]))
 # Expected output:
-# Yielding first positive even: 2
-# After cut in first clause.
-# [2]
+# Yielding first positive even: 2 and 4
+# [2, 4]
 
 print("\n--- Testing p_cut when first clause never yields p_cut ---")
 @p_prolog()
