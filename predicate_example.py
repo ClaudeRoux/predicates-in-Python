@@ -82,16 +82,15 @@ print(verif(12,12,p), p)
 p = []
 print(verif(10,14,p), p)
 
-# Note : Les fonctions décorées par @p_prolog doivent être des générateurs (utiliser 'yield' pour produire des solutions).
-# Utilisez check() ou fail() pour les vérifications de conditions à l'intérieur du générateur (elles lèvent PredicateFailed).
-# Utilisez yield p_cut() pour signaler une coupe (elle ne lève plus d'exception, mais produit un sentinel).
-# L'exécution du corps de la clause continue après yield p_cut().
+# Note: Functions decorated with @p_prolog must be generators (use 'yield' to produce solutions).
+# Use check() or fail() for condition verification inside the generator (they raise PredicateFailed).
+# Use yield p_cut() to signal a cut (it no longer raises an exception, but produces a sentinel).
+# Execution of the clause body continues after yield p_cut().
 
 
-# --- Exemple d'utilisation pour p_prolog (avec générateurs et yield p_cut) ---
+# --- Usage example for p_prolog (with generators and yield p_cut) ---
 
-# Un prédicat pour trouver des nombres pairs OU des nombres négatifs dans une liste.
-# Chaque clause DOIT ÊTRE UN GÉNÉRATEUR (utiliser yield).
+# Each clause must be a GENERATOR (uses yield).
 @p_prolog(guard=lambda item, my_list: isinstance(my_list, list))
 def find_in_list(item, my_list): # Cette fonction est un générateur
     print(f"  Clause 1: Finding even numbers in {my_list}...")
