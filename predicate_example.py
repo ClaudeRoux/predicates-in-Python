@@ -89,34 +89,33 @@ print(verif(10,14,p), p)
 
 
 # --- Usage example for p_prolog (with generators and yield p_cut) ---
-
 # Each clause must be a GENERATOR (uses yield).
 @p_prolog(guard=lambda item, my_list: isinstance(my_list, list))
-def find_in_list(item, my_list): # Cette fonction est un générateur
+def find_in_list(item, my_list): # This function is a generator
     print(f"  Clause 1: Finding even numbers in {my_list}...")
-    # Cette clause réussit et produit 'item' si 'item' est dans la liste ET est pair.
+    # This clause succeeds and yields 'item' if 'item' is in the list AND is even.
     p_check(item in my_list, f"{item} not found in list")
     p_check(isinstance(item, int) and item % 2 == 0, f"{item} is not an even integer")
     print(f"  Clause 1 succeeded checks for {item}. Yielding {item}.")
-    yield item # Produit la solution si tous les checks passent.
-    print(f"  Clause 1 continues execution after yielding {item}.") # Cette ligne sera exécutée
+    yield item # Yields the solution if all checks pass.
+    print(f"  Clause 1 continues execution after yielding {item}.") # This line will be executed
 
 
 @p_prolog(guard=lambda item, my_list: isinstance(my_list, list))
-def find_in_list(item, my_list): # Cette fonction est aussi un générateur
+def find_in_list(item, my_list): # This function is also a generator
     print(f"  Clause 2: Finding negative numbers in {my_list}...")
-    # Cette clause réussit et produit 'item' si 'item' est dans la liste ET est négatif.
+    # This clause succeeds and yields 'item' if 'item' is in the list AND is negative.
     p_check(item in my_list, f"{item} not found in list")
     p_check(isinstance(item, (int, float)) and item < 0, f"{item} is not negative")
     print(f"  Clause 2 succeeded checks for {item}. Yielding {item}.")
-    yield item # Produit la solution si tous les checks passent.
-    # Ajoutons une coupe *après* avoir potentiellement produit la solution
-    print(f"  Clause 2 continues execution after yielding {item}. Calling p_cut()...") # Cette ligne sera exécutée
-    yield p_cut() # Signale la coupe en produisant le sentinel.
-    print(f"  Clause 2 continues execution AFTER p_cut() yield for {item}.") # Cette ligne sera aussi exécutée, mais la coupe arrêtera les clauses SUIVANTES.
+    yield item # Yields the solution if all checks pass.
+    # Let's add a cut *after* potentially yielding the solution
+    print(f"  Clause 2 continues execution after yielding {item}. Calling p_cut()...") # This line will be executed
+    yield p_cut() # Signals the cut by yielding the sentinel.
+    print(f"  Clause 2 continues execution AFTER p_cut() yield for {item}.") # This line will also be executed, but the cut will stop the SUBSEQUENT clauses.
 
 
-# --- Testing p_prolog (avec générateurs et yield p_cut) ---
+# --- Testing p_prolog (with generators and yield p_cut) ---
 print("\n--- Testing p_prolog 'find_in_list' (Generators & yield p_cut) ---")
 
 my_list = [1, 2, -3, 4, -5.0, 6]

@@ -9,7 +9,7 @@ Each predicate function can also be associated with a guard lambda.
 
 import functools
 
-# Les registres et l'exception restent les mêmes
+# The registries and exception remain the same
 _predicate_registry = {}
 _predicate_wrappers = {}
 
@@ -58,35 +58,35 @@ def predicate(guard=None):
 
                     if guard_ok:
                         try:
-                            # Exécuter le corps de la clause.
-                            # Si cette ligne se termine sans exception, c'est un succès pour la clause.
+                            # Execute the clause body.
+                            # If this line finishes without exception, it's a success for the clause.
                             pred_func(*args, **kwargs)
 
-                            # === Branche Succès ===
-                            # Si nous arrivons ici, cela signifie que pred_func a terminé
-                            # sans lever PredicateFailed. La clause a réussi.
-                            return True # Succès du prédicat global (Coupure implicite)
+                            # === Success Branch ===
+                            # If we reach here, it means pred_func finished
+                            # without raising PredicateFailed. The clause succeeded.
+                            return True # Global predicate success (Implicit cut)
 
                         except PredicateFailed as e:
-                            # === Branche Échec ===
-                            # La clause a explicitement signalé un échec via p_check() ou p_fail().
-                            # print(f"Clause {pred_func.__name__} pour {pred_name} a échoué: {e}") # Debug optionnel
-                            continue # Passer à la clause suivante (backtracking)
+                            # === Failure Branch ===
+                            # The clause explicitly signaled a failure via p_check() or p_fail().
+                            # print(f"Clause {pred_func.__name__} for {pred_name} failed: {e}") # Optional debug
+                            continue # Move to the next clause (backtracking)
 
                         except Exception as e:
-                             # Gérer d'autres erreurs inattendues.
-                             print(f"Erreur inattendue dans la clause du prédicat {pred_name} ({pred_func.__name__}): {e}")
-                             continue # Traiter comme un échec de clause
+                             # Handle other unexpected errors.
+                             print(f"Unexpected error in predicate clause {pred_name} ({pred_func.__name__}): {e}")
+                             continue # Treat as clause failure
 
-                # Si la boucle se termine, aucune clause n'a réussi.
-                return False # Échec du prédicat global.
+                # If the loop finishes, no clause succeeded.
+                return False # Global predicate failure.
 
             _predicate_wrappers[pred_name] = predicate_wrapper
 
-        # Ajouter la clause au registre (ordre de déclaration)
+        # Add the clause to the registry (declaration order)
         _predicate_registry[pred_name].append((guard, func))
 
-        # Retourner le wrapper unique pour ce nom.
+        # Return the unique wrapper for this name.
         return _predicate_wrappers[pred_name]
 
     return decorator
@@ -111,80 +111,80 @@ def principles(guard=None):
     def decorator(func):
         pred_name = func.__name__
 
-        # Si c'est la première fois que ce nom de prédicatfull est vu,
-        # initialiser son registre et créer le wrapper unique.
+        # If this predicate name is seen for the first time,
+        # initialize its registry and create the unique wrapper.
         if pred_name not in _principles_registry:
             _principles_registry[pred_name] = []
 
-            # === Création de l'instance unique du wrapper pour ce nom ===
-            # Ce wrapper est la fonction qui sera réellement appelée par l'utilisateur (ex: is_special_number(...)).
-            @functools.wraps(func) # Copie le nom, docstring, etc., de la première fonction décorée
+            # === Creation of the unique wrapper instance for this name ===
+            # This wrapper is the function that will actually be called by the user (e.g., is_special_number(...)).
+            @functools.wraps(func) # Copies the name, docstring, etc., from the first decorated function
             def principles_wrapper(*args, **kwargs):
-                # Accède à la liste des clauses enregistrées pour ce nom (construite par les décorateurs successifs).
+                # Access the list of clauses registered for this name (built by successive decorators).
                 definitions = _principles_registry.get(pred_name, [])
 
-                # Dans cette interprétation de l'ET strict, on itère. Si la garde OU le corps d'une clause échoue,
-                # l'ensemble du principles échoue immédiatement.
+                # In this strict AND interpretation, we iterate. If the guard OR the body of a clause fails,
+                # the entire principles fails immediately.
                 for current_guard, pred_func in definitions:
-                    # Pour chaque clause, vérifier garde PUIS corps.
+                    # For each clause, check guard THEN body.
 
-                    # 1. Vérifier la Garde (fait partie de la condition globale qui doit réussir)
+                    # 1. Check the Guard (part of the overall condition that must succeed)
                     try:
-                        # Si guard est None, la garde est considérée comme toujours réussie pour cette partie de l'AND.
+                        # If guard is None, the guard is considered to always succeed for this part of the global AND.
                         guard_ok = (current_guard is None) or current_guard(*args, **kwargs)
                     except Exception as e:
-                        # Si l'évaluation de la garde lève une erreur, c'est un échec de cette partie de l'AND global.
-                        print(f"Erreur lors de l'exécution de la garde pour principles {pred_name} (clause {pred_func.__name__}): {e}")
-                        return False # Échec global immédiat
+                        # If evaluating the guard raises an error, it's a failure of this part of the global AND.
+                        print(f"Error during guard execution for principles {pred_name} (clause {pred_func.__name__}): {e}")
+                        return False # Immediate global failure
 
                     if not guard_ok:
-                        # === Échec basé sur la GARDE ===
-                        # La garde elle-même a retourné False. Dans cet ET strict, l'ensemble du principles échoue.
+                        # === Failure based on the GUARD ===
+                        # The guard itself returned False. In this strict AND, the entire principles fails.
                         # print(f"Guard failed for principles {pred_name} (clause {pred_func.__name__}). Overall failure.") # Debug
-                        return False # Échec global immédiat
+                        return False # Immediate global failure
 
-                    # 2. Si la Garde a réussi, vérifier le Corps (l'autre partie de l'AND pour cette clause)
+                    # 2. If the Guard succeeded, check the Body (the other part of the AND for this clause)
                     try:
-                        # Exécuter le corps de la clause. Il utilise check/fail et lève PredicateFailed en cas d'échec.
+                        # Execute the clause body. It uses check/fail and raises PredicateFailed on failure.
                         pred_func(*args, **kwargs)
-                        # Si on atteint cette ligne, la garde A réussi ET le corps A réussi.
-                        # On continue la boucle pour vérifier la clause enregistrée suivante.
+                        # If we reach this line, the guard HAS succeeded AND the body HAS succeeded.
+                        # We continue the loop to check the next registered clause.
 
                     except PredicateFailed as e:
-                        # === Échec basé sur le CORPS ===
-                        # Le corps a explicitement signalé un échec (via check/fail).
-                        # Dans cet ET strict, l'ensemble du principles échoue.
+                        # === Failure based on the BODY ===
+                        # The body explicitly signaled a failure (via check/fail).
+                        # In this strict AND, the entire principles fails.
                         # print(f"Body failed for principles {pred_name} (clause {pred_func.__name__}): {e}. Overall failure.") # Debug
-                        return False # Échec global immédiat
+                        return False # Immediate global failure
 
                     except Exception as e:
-                         # Une erreur inattendue dans le corps d'une clause. On la traite comme un échec de l'AND.
-                         print(f"Erreur inattendue dans la clause principles {pred_name} ({pred_func.__name__}): {e}. Overall failure.") # Debug
-                         return False # Échec global immédiat
+                         # An unexpected error in the body of a clause. We treat it as an AND failure.
+                         print(f"Unexpected error in principles clause {pred_name} ({pred_func.__name__}): {e}. Overall failure.") # Debug
+                         return False # Immediate global failure
 
 
-                # Si la boucle s'est terminée sans qu'aucune clause (garde OU corps) ne renvoie False :
-                # Cela signifie que toutes les clauses ont réussi leur garde ET leur corps séquentiellement.
-                return True # SUCCÈS GLOBAL (l'ET de toutes les clauses est VRAI)
+                # If the loop finished without any clause (guard OR body) returning False:
+                # This means all clauses succeeded their guard AND their body sequentially.
+                return True # GLOBAL SUCCESS (the AND of all clauses is TRUE)
 
-            # Enregistrer cette instance unique du wrapper pour ce nom de prédicatfull.
+            # Register this unique wrapper instance for this predicate name.
             _principles_wrappers[pred_name] = principles_wrapper
 
-        # Ajouter la fonction décorée et sa garde à la liste des clauses pour ce nom.
-        # Utilise append() pour stocker dans l'ordre de déclaration (ordre type Prolog).
+        # Add the decorated function and its guard to the list of clauses for this predicate name.
+        # Uses append() to store in declaration order (Prolog-like order).
         _principles_registry[pred_name].append((guard, func))
 
-        # Le décorateur retourne TOUJOURS l'instance unique du wrapper pour ce nom.
-        # C'est ce qui sera assigné au nom de la fonction (ex: is_special_number).
+        # The decorator ALWAYS returns the unique wrapper instance for this name.
+        # This is what will be assigned to the function name (e.g., is_special_number).
         return _principles_wrappers[pred_name]
 
     return decorator
 
 # --- NEW: Sentinel value and helper function for the Cut ---
-# Nous n'avons plus besoin de l'exception PredicateCut si p_cut ne la lève pas.
-# Cependant, l'exception PredicateFailed reste nécessaire pour les échecs de check/fail.
+# We no longer need the PredicateCut exception if p_cut does not raise it.
+# However, the PredicateFailed exception remains necessary for check/fail failures.
 
-# Valeur unique pour signaler la coupe lors du yield
+# Unique value to signal the cut during yield
 _PREDICATE_CUT_SENTINEL = object()
 
 def p_cut():
@@ -196,7 +196,7 @@ def p_cut():
     # print("p_cut() called (returns sentinel)") # Debug
     return _PREDICATE_CUT_SENTINEL
 
-# === Registries et Décorateur pour le comportement à la Prolog ('p_prolog') ===
+# === Registries and Decorator for Prolog-like behavior ('p_prolog') ===
 _p_prolog_registry = {}
 _p_prolog_wrappers = {}
 
@@ -220,87 +220,87 @@ def p_prolog(guard=None):
             @functools.wraps(func) # Wraps the *first* func definition
             def p_prolog_wrapper(*args, **kwargs):
                 definitions = _p_prolog_registry.get(pred_name, [])
-                solutions = [] # Liste pour collecter toutes les solutions produites (yielded)
+                solutions = [] # List to collect all produced (yielded) solutions
 
-                cut_encountered = False # Flag pour indiquer si une coupe a été rencontrée
+                cut_encountered = False # Flag to indicate if a cut has been encountered
 
-                # Itérer sur TOUTES les clauses enregistrées, sauf si une coupe arrête la recherche plus tôt.
+                # Iterate over ALL registered clauses, unless a cut stops the search earlier.
                 for current_clause_index, (current_guard, pred_func) in enumerate(definitions):
-                    # Si une coupe a été rencontrée dans une clause *précédente*, on arrête d'essayer les clauses *suivantes*.
+                    # If a cut has been encountered in a *previous* clause, stop trying *subsequent* clauses.
                     if cut_encountered:
-                         break # Sort de la boucle principale d'exploration des clauses
+                         break # Exit the main clause exploration loop
 
-                    # --- Vérifier la Garde de la clause actuelle. ---
-                    # Le try/except ici gère les erreurs d'exécution *dans la garde elle-même*.
+                    # --- Check the Guard of the current clause. ---
+                    # The try/except here handles execution errors *within the guard itself*.
                     try:
                         guard_ok = (current_guard is None) or current_guard(*args, **kwargs)
                     except Exception as e:
                         print(f"Error in guard for p_prolog {pred_name} (clause {pred_func.__name__}): {e}")
-                        guard_ok = False # Une erreur dans la garde rend cette clause non applicable
+                        guard_ok = False # An error in the guard makes this clause not applicable
 
-                    # Si la garde a réussi (ou n'existait pas)...
+                    # If the guard succeeded (or didn't exist)...
                     if guard_ok:
-                        # --- Essayer d'exécuter le Corps de la clause (qui doit être un générateur). ---
-                        # Le try/except ici gère les exceptions levées *par le code À L'INTÉRIEUR du générateur*
-                        # (PredicateFailed ou toute autre Exception).
+                        # --- Try to execute the Body of the clause (which must be a generator). ---
+                        # The try/except here handles exceptions raised *by the code INSIDE the generator*
+                        # (PredicateFailed or any other Exception).
                         try:
-                            # Appeler la fonction décorée pour obtenir l'objet générateur
+                            # Call the decorated function to get the generator object
                             result_generator = pred_func(*args, **kwargs)
 
-                            # Itérer sur les valeurs produites (yielded) par ce générateur.
-                            # Cette boucle interne gère l'exécution et les exceptions du générateur.
+                            # Iterate over the values produced (yielded) by this generator.
+                            # This inner loop handles the execution and exceptions of the generator.
                             for result in result_generator:
-                                # Si une valeur spéciale (sentinel) est produite, c'est une coupe.
+                                # If a special value (sentinel) is produced, it's a cut.
                                 if result is _PREDICATE_CUT_SENTINEL:
-                                    cut_encountered = True # Met le flag de coupe
-                                    # On NE collecte PAS le sentinel dans la liste des solutions.
-                                    # L'exécution du générateur (corps de la clause) continue APRÈS le yield p_cut().
-                                    # La boucle 'for result in...' continue de consommer le générateur.
+                                    cut_encountered = True # Set the cut flag
+                                    # We do NOT collect the sentinel in the solutions list.
+                                    # Generator execution (clause body) continues AFTER the yield p_cut().
+                                    # The 'for result in...' loop continues to consume the generator.
                                 else:
-                                    # Si une valeur normale est produite, c'est une solution trouvée par ce chemin.
-                                    solutions.append(result) # Collecte la solution
+                                    # If a normal value is produced, it's a solution found by this path.
+                                    solutions.append(result) # Collect the solution
 
-                                # Si le générateur se termine normalement (StopIteration implicite),
-                                # cela signifie que ce chemin de la clause a été exploré sans échec.
-                                # Si une coupe a été rencontrée via yield p_cut(), cut_encountered est True.
-                                # La boucle 'for result in result_generator' se termine.
+                                # If the generator terminates normally (implicit StopIteration),
+                                # this means that this clause path has been explored without failure.
+                                # If a cut was yielded via yield p_cut(), cut_encountered is True.
+                                # The 'for result in result_generator' loop terminates.
 
-                            # Si on atteint ici, le générateur a terminé SANS lever PredicateFailed ou une autre Exception.
-                            # Si une coupe a été yieldée, cut_encountered est True. Le flag est mis.
-                            # La boucle EXTERNE vérifiera ce flag avant la prochaine itération.
+                            # If we reach here, the generator finished WITHOUT raising PredicateFailed or another Exception.
+                            # If a cut was yielded, cut_encountered is True. The flag is set.
+                            # The OUTER loop will check this flag before the next iteration.
 
                         except PredicateFailed as e:
-                            # === Branche Échec (dans le Corps) ===
-                            # Une fonction check() ou fail() a été appelée À L'INTÉRIEUR du générateur.
-                            # print(f"Clause {pred_func.__name__} pour {pred_name} a échoué durant l'exécution: {e}") # Debug
-                            # Ce chemin d'exploration a échoué. On l'abandonne.
-                            # Le 'pass' gère l'exception. La boucle EXTERNE continue vers la prochaine définition de clause.
-                            pass # Gère l'échec de la clause - continue la recherche avec la clause suivante
+                            # === Failure Branch (in the Body) ===
+                            # A check() or fail() function was called INSIDE the generator.
+                            # print(f"Clause {pred_func.__name__} for {pred_name} failed during execution: {e}") # Debug
+                            # This exploration path failed. We abandon it.
+                            # The 'pass' handles the exception. The OUTER loop continues to the next clause definition.
+                            pass # Handles clause failure - continues search with the next clause
 
                         except Exception as e:
-                             # Une erreur inattendue s'est produite À L'INTÉRIEUR du générateur.
-                             print(f"Erreur inattendue dans la clause p_prolog {pred_name} ({pred_func.__name__}): {e}")
-                             # On la traite comme un échec pour ce chemin d'exploration.
-                             # Le 'pass' gère l'exception, et la boucle EXTERNE continue à la clause suivante.
-                             pass # Gère l'erreur inattendue - traitée comme échec de clause
+                             # An unexpected error occurred INSIDE the generator.
+                             print(f"Unexpected error in p_prolog clause {pred_name} ({pred_func.__name__}): {e}")
+                             # We treat it as a failure for this exploration path.
+                             # The 'pass' handles the exception, and the OUTER loop continues to the next clause.
+                             pass # Handles unexpected error - treated as clause failure
 
-                    # Else (guard_ok est False): La garde n'a pas réussi. Cette clause n'est pas applicable pour ces arguments.
-                    # L'exécution passe simplement à la prochaine clause dans la boucle EXTERNE.
+                    # Else (guard_ok is False): The guard did not succeed. This clause is not applicable for these arguments.
+                    # Execution simply proceeds to the next clause in the OUTER loop.
 
-                # La boucle EXTERNE se termine soit parce que toutes les clauses ont été vérifiées,
-                # soit parce que le flag 'cut_encountered' est passé à True.
-                # Retourne la liste de toutes les solutions collectées à partir des chemins d'exploration.
+                # The OUTER loop terminates either because all clauses have been checked,
+                # or because the 'cut_encountered' flag has been set to True.
+                # Returns the list of all solutions collected from the exploration paths.
                 return solutions
 
-            _p_prolog_wrappers[pred_name] = p_prolog_wrapper # Stocke l'instance unique du wrapper
+            _p_prolog_wrappers[pred_name] = p_prolog_wrapper # Stores the unique wrapper instance
 
-        # Ajoute la fonction décorée actuelle et sa garde à la liste des clauses
-        # pour ce nom de prédicat_prolog dans le registre.
-        # Utilise append() pour stocker dans l'ordre de déclaration (ordre type Prolog).
+        # Add the current decorated function and its guard to the list of clauses
+        # for this p_prolog predicate name in the registry.
+        # Uses append() to store in declaration order (Prolog-like order).
         _p_prolog_registry[pred_name].append((guard, func))
 
-        # Le décorateur retourne TOUJOURS l'instance unique du wrapper pour ce nom.
-        # C'est ce qui sera assigné au nom de la fonction (ex: find_in_list).
+        # The decorator ALWAYS returns the unique wrapper instance for this name.
+        # This is what will be assigned to the function name (e.g., find_in_list).
         return _p_prolog_wrappers[pred_name]
 
     return decorator
