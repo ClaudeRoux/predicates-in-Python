@@ -245,7 +245,8 @@ print(find_all_odd_numbers([1, 2, 3, 4]))
 # Trying second clause for odd numbers.
 # [1, 3, 10, 30]
 
-Return Value: Returns a list containing all solutions yielded by successful clauses. An empty list is returned if no solutions are found.
+Return Value: Returns a list containing all solutions yielded by successful clauses. 
+An empty list is returned if no solutions are found.
 ```
 
 
